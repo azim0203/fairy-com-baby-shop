@@ -7,7 +7,7 @@ export default function Footer() {
             <div className="container">
                 <div className="footer-grid">
                     <div className="footer-brand">
-                        <h3>🧚 fairy.com</h3>
+                        <h3>Fairy.Com</h3>
                         <p><strong>ANISH SHAIKH</strong> - Proprietor</p>
                         <p>Your trusted destination for quality baby products in Surat, Gujarat.</p>
                         <div className="footer-social">

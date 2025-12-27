@@ -24,7 +24,7 @@ export default function AdminLogin() {
     return (
         <div className="admin-login">
             <div className="login-card">
-                <h1 className="login-logo">🧚 Fairy.Com</h1>
+                <h1 className="login-logo">Fairy.Com</h1>
                 <p className="login-subtitle">Admin Access Only</p>
 
                 <form onSubmit={handleSubmit} className="login-form">
