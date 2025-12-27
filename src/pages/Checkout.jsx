@@ -1,13 +1,15 @@
-// Checkout Page with WhatsApp Order
-import { useState } from 'react';
+// Checkout Page with WhatsApp Order and Dynamic Delivery Charges
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { saveOrder } from '../utils/storage';
+import { calculateDeliveryCharge, getDeliveryEstimate } from '../utils/delivery';
 
 export default function Checkout() {
     const navigate = useNavigate();
     const { items, getTotal, clearCart } = useCart();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deliveryInfo, setDeliveryInfo] = useState({ charge: 0, label: '', valid: false });
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -20,6 +22,17 @@ export default function Checkout() {
 
     // WhatsApp number
     const WHATSAPP_NUMBER = '919173610588';
+
+    // Calculate delivery when pincode changes
+    useEffect(() => {
+        if (formData.pincode.length === 6) {
+            const subtotal = getTotal();
+            const info = calculateDeliveryCharge(formData.pincode, subtotal);
+            setDeliveryInfo(info);
+        } else {
+            setDeliveryInfo({ charge: 0, label: 'Enter 6-digit pincode', valid: false });
+        }
+    }, [formData.pincode, getTotal]);
 
     if (items.length === 0) {
         return (
@@ -41,7 +54,7 @@ export default function Checkout() {
     };
 
     const subtotal = getTotal();
-    const shipping = subtotal > 500 ? 0 : 50;
+    const shipping = deliveryInfo.valid ? deliveryInfo.charge : 0;
     const total = subtotal + shipping;
 
     // Generate WhatsApp message
@@ -51,6 +64,7 @@ export default function Checkout() {
         message += `📞 *Phone:* ${formData.phone}\n`;
         if (formData.email) message += `📧 *Email:* ${formData.email}\n`;
         message += `📍 *Address:* ${formData.address}, ${formData.city} - ${formData.pincode}\n`;
+        message += `🚚 *Delivery:* ${deliveryInfo.label}\n`;
         if (formData.notes) message += `📝 *Notes:* ${formData.notes}\n`;
         message += `\n📦 *ORDER ITEMS:*\n`;
         message += `─────────────────\n`;
@@ -62,7 +76,7 @@ export default function Checkout() {
 
         message += `─────────────────\n`;
         message += `💰 Subtotal: ₹${subtotal}\n`;
-        message += `🚚 Shipping: ${shipping === 0 ? 'FREE' : '₹' + shipping}\n`;
+        message += `🚚 Delivery: ${shipping === 0 ? 'FREE' : '₹' + shipping}\n`;
         message += `✨ *TOTAL: ₹${total}*\n\n`;
         message += `Thank you for ordering! 🙏`;
 
@@ -72,6 +86,11 @@ export default function Checkout() {
     const handleWhatsAppOrder = () => {
         if (!formData.name || !formData.phone || !formData.address || !formData.pincode) {
             alert('Please fill in all required fields (Name, Phone, Address, Pincode)');
+            return;
+        }
+
+        if (!deliveryInfo.valid) {
+            alert('Please enter a valid 6-digit pincode');
             return;
         }
 
@@ -85,6 +104,7 @@ export default function Checkout() {
             subtotal: subtotal,
             shipping: shipping,
             total: total,
+            deliveryInfo: deliveryInfo.label,
             orderMethod: 'whatsapp'
         });
 
@@ -101,6 +121,12 @@ export default function Checkout() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (!deliveryInfo.valid) {
+            alert('Please enter a valid 6-digit pincode');
+            return;
+        }
+
         setIsSubmitting(true);
 
         const order = saveOrder({
@@ -108,7 +134,8 @@ export default function Checkout() {
             items: items,
             subtotal: subtotal,
             shipping: shipping,
-            total: total
+            total: total,
+            deliveryInfo: deliveryInfo.label
         });
 
         clearCart();
@@ -160,11 +187,27 @@ export default function Checkout() {
                                         value={formData.city} onChange={handleChange} />
                                 </div>
                                 <div className="input-group">
-                                    <label>Pincode *</label>
+                                    <label>Pincode * (6 digits)</label>
                                     <input type="text" name="pincode" className="input" required
-                                        value={formData.pincode} onChange={handleChange} placeholder="395007" />
+                                        value={formData.pincode} onChange={handleChange} placeholder="394210"
+                                        maxLength="6" pattern="[0-9]{6}" />
                                 </div>
                             </div>
+
+                            {/* Delivery Charge Info */}
+                            {formData.pincode.length === 6 && (
+                                <div className="delivery-info">
+                                    <div className="delivery-info-row">
+                                        <span className="delivery-label">🚚 {deliveryInfo.label}</span>
+                                        <span className="delivery-charge">
+                                            {deliveryInfo.charge === 0 ? 'FREE' : `₹${deliveryInfo.charge}`}
+                                        </span>
+                                    </div>
+                                    <div className="delivery-estimate">
+                                        📅 Estimated: {getDeliveryEstimate(formData.pincode)}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="input-group">
                                 <label>Order Notes (Optional)</label>
@@ -214,12 +257,21 @@ export default function Checkout() {
                             <span>₹{subtotal.toLocaleString()}</span>
                         </div>
                         <div className="cart-summary-row">
-                            <span>Shipping</span>
-                            <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                            <span>Delivery</span>
+                            <span style={{ color: shipping === 0 ? '#27AE60' : 'inherit' }}>
+                                {deliveryInfo.valid ? (shipping === 0 ? 'FREE' : `₹${shipping}`) : '—'}
+                            </span>
                         </div>
                         <div className="cart-summary-row total">
                             <span>Total</span>
                             <span>₹{total.toLocaleString()}</span>
+                        </div>
+
+                        {/* Track Order Link */}
+                        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                            <Link to="/track-order" style={{ fontSize: '0.85rem', color: 'var(--text-medium)' }}>
+                                📦 Already ordered? Track your order
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -15,6 +15,7 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
+import TrackOrder from './pages/TrackOrder';
 
 // Admin Pages
 import AdminLogin from './pages/admin/Login';
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
                 <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
                 <Route path="/order-success/:orderId" element={<CustomerLayout><OrderSuccess /></CustomerLayout>} />
+                <Route path="/track-order" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLogin />} />

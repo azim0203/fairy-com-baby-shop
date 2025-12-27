@@ -491,3 +491,306 @@ textarea.input {
 .toast-error {
     border-left: 4px solid var(--logo-f);
 }
+
+/* ==================== TRACK ORDER PAGE ==================== */
+.track-order-page {
+    padding: 2rem 0;
+    min-height: 70vh;
+}
+
+.track-order-page h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.track-subtitle {
+    text-align: center;
+    color: var(--text-medium);
+    margin-bottom: 2rem;
+}
+
+.track-form {
+    max-width: 500px;
+    margin: 0 auto 2rem;
+}
+
+.track-input-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.track-input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: 2px solid var(--pink-medium);
+    border-radius: var(--radius-full);
+    font-size: 1rem;
+    font-family: inherit;
+    text-transform: uppercase;
+}
+
+.track-input:focus {
+    outline: none;
+    border-color: var(--logo-m);
+}
+
+.track-error {
+    background: #FFE8E8;
+    color: #D63031;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto 1.5rem;
+}
+
+.track-result {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.order-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.order-status-header .order-id {
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: transparent;
+    padding: 0;
+}
+
+.order-status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Status Tracker */
+.status-tracker {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.status-tracker::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: var(--pink-medium);
+    z-index: 0;
+}
+
+.status-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--pink-soft);
+    border: 3px solid var(--pink-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--text-light);
+}
+
+.status-step.completed .step-icon {
+    background: #27AE60;
+    border-color: #27AE60;
+    color: white;
+}
+
+.status-step.current .step-icon {
+    background: var(--logo-m);
+    border-color: var(--logo-m);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.step-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.status-step.completed .step-label,
+.status-step.current .step-label {
+    color: var(--text-dark);
+}
+
+/* Order Details Card */
+.order-details-card {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 1.5rem;
+}
+
+.order-details-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--pink-soft);
+    font-size: 0.9rem;
+}
+
+.detail-row span:first-child {
+    font-weight: 600;
+    color: var(--text-medium);
+}
+
+.detail-row span:last-child {
+    text-align: right;
+}
+
+.order-items-list {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--pink-soft);
+    border-radius: var(--radius-md);
+}
+
+.order-items-list h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.order-item-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+}
+
+.order-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.order-total-row.total {
+    border-top: 2px solid var(--pink-medium);
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.order-total-row.total span:last-child {
+    color: var(--logo-m);
+}
+
+/* Help & Back */
+.track-help {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.track-help p {
+    margin-bottom: 0.75rem;
+    color: var(--text-medium);
+}
+
+.btn-whatsapp {
+    background: #25D366 !important;
+    color: white !important;
+}
+
+.track-back {
+    text-align: center;
+}
+
+.track-not-found {
+    text-align: center;
+    padding: 3rem;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.track-not-found span {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+    .track-input-group {
+        flex-direction: column;
+    }
+
+    .status-tracker {
+        gap: 0.25rem;
+    }
+
+    .step-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .step-label {
+        font-size: 0.7rem;
+    }
+}
+
+/* ==================== DELIVERY CHARGE INFO ==================== */
+.delivery-info {
+    background: var(--pink-soft);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin: 1rem 0;
+}
+
+.delivery-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.delivery-label {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+}
+
+.delivery-charge {
+    font-weight: 700;
+    color: var(--logo-r);
+}
+
+.delivery-estimate {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
