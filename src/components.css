@@ -184,6 +184,19 @@
         display: block;
     }
 
+    /* Remove rotations from navbar logo on mobile */
+    .logo-fairy span {
+        transform: rotate(0deg) !important;
+    }
+
+    .logo-fairy {
+        font-size: 1.5rem;
+    }
+
+    .logo-tagline {
+        font-size: 0.5rem;
+    }
+
     .mobile-menu {
         position: fixed;
         top: 65px;
