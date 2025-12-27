@@ -42,12 +42,11 @@ export default function Home() {
 
                         {/* Baby product icons row */}
                         <div className="hero-icons-row">
-                            <span className="hero-icon-item">🧷</span>
+                            <span className="hero-icon-item">🧒</span>
                             <span className="hero-icon-item">🍼</span>
                             <span className="hero-icon-item">👶</span>
                             <span className="hero-icon-item">👕</span>
                             <span className="hero-icon-item">🧸</span>
-                            <span className="hero-icon-item">👟</span>
                         </div>
 
                         <p className="hero-tagline">✨ One stop for all your baby needs ✨</p>
