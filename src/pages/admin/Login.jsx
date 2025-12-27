@@ -1,4 +1,4 @@
-// Admin Login Page
+// Admin Login Page - No credentials shown
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -24,8 +24,8 @@ export default function AdminLogin() {
     return (
         <div className="admin-login">
             <div className="login-card">
-                <h1 className="login-logo">🧚 Fairy.com</h1>
-                <p className="login-subtitle">Admin Dashboard</p>
+                <h1 className="login-logo">🧚 Fairy.Com</h1>
+                <p className="login-subtitle">Admin Access Only</p>
 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="input-group">
@@ -58,10 +58,6 @@ export default function AdminLogin() {
                         🔐 Login
                     </button>
                 </form>
-
-                <p className="text-muted mt-2" style={{ fontSize: '0.875rem' }}>
-                    Demo: admin / fairy2024
-                </p>
             </div>
         </div>
     );

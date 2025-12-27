@@ -1,4 +1,4 @@
-// Checkout Page
+// Checkout Page with WhatsApp Order
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -17,6 +17,9 @@ export default function Checkout() {
         pincode: '',
         notes: ''
     });
+
+    // WhatsApp number
+    const WHATSAPP_NUMBER = '919173610588';
 
     if (items.length === 0) {
         return (
@@ -37,19 +40,75 @@ export default function Checkout() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const subtotal = getTotal();
+    const shipping = subtotal > 500 ? 0 : 50;
+    const total = subtotal + shipping;
+
+    // Generate WhatsApp message
+    const generateWhatsAppMessage = () => {
+        let message = `🧚 *NEW ORDER - Fairy.Com*\n\n`;
+        message += `👤 *Customer:* ${formData.name}\n`;
+        message += `📞 *Phone:* ${formData.phone}\n`;
+        if (formData.email) message += `📧 *Email:* ${formData.email}\n`;
+        message += `📍 *Address:* ${formData.address}, ${formData.city} - ${formData.pincode}\n`;
+        if (formData.notes) message += `📝 *Notes:* ${formData.notes}\n`;
+        message += `\n📦 *ORDER ITEMS:*\n`;
+        message += `─────────────────\n`;
+
+        items.forEach((item, index) => {
+            message += `${index + 1}. ${item.name}\n`;
+            message += `   Qty: ${item.quantity} × ₹${item.price} = ₹${item.price * item.quantity}\n`;
+        });
+
+        message += `─────────────────\n`;
+        message += `💰 Subtotal: ₹${subtotal}\n`;
+        message += `🚚 Shipping: ${shipping === 0 ? 'FREE' : '₹' + shipping}\n`;
+        message += `✨ *TOTAL: ₹${total}*\n\n`;
+        message += `Thank you for ordering! 🙏`;
+
+        return encodeURIComponent(message);
+    };
+
+    const handleWhatsAppOrder = () => {
+        if (!formData.name || !formData.phone || !formData.address || !formData.pincode) {
+            alert('Please fill in all required fields (Name, Phone, Address, Pincode)');
+            return;
+        }
+
+        const message = generateWhatsAppMessage();
+        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+
+        // Save order locally too
+        saveOrder({
+            customer: formData,
+            items: items,
+            subtotal: subtotal,
+            shipping: shipping,
+            total: total,
+            orderMethod: 'whatsapp'
+        });
+
+        // Open WhatsApp
+        window.open(whatsappUrl, '_blank');
+
+        // Clear cart after a delay
+        setTimeout(() => {
+            clearCart();
+            navigate('/');
+            alert('Order sent via WhatsApp! We will contact you shortly.');
+        }, 1000);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-
-        const subtotal = getTotal();
-        const shipping = subtotal > 500 ? 0 : 50;
 
         const order = saveOrder({
             customer: formData,
             items: items,
             subtotal: subtotal,
             shipping: shipping,
-            total: subtotal + shipping
+            total: total
         });
 
         clearCart();
@@ -58,10 +117,6 @@ export default function Checkout() {
             navigate(`/order-success/${order.id}`);
         }, 1000);
     };
-
-    const subtotal = getTotal();
-    const shipping = subtotal > 500 ? 0 : 50;
-    const total = subtotal + shipping;
 
     return (
         <main className="checkout-page">
@@ -118,7 +173,19 @@ export default function Checkout() {
                             </div>
                         </div>
 
-                        <button type="submit" className={`btn btn-primary btn-lg checkout-btn mt-2 ${isSubmitting ? 'animate-pulse' : ''}`}
+                        {/* WhatsApp Order Button */}
+                        <button type="button" onClick={handleWhatsAppOrder}
+                            className="btn btn-lg mt-2"
+                            style={{
+                                width: '100%',
+                                background: '#25D366',
+                                color: 'white',
+                                marginBottom: '0.75rem'
+                            }}>
+                            📱 Order via WhatsApp - ₹{total.toLocaleString()}
+                        </button>
+
+                        <button type="submit" className={`btn btn-primary btn-lg checkout-btn ${isSubmitting ? 'animate-pulse' : ''}`}
                             disabled={isSubmitting} style={{ width: '100%' }}>
                             {isSubmitting ? '⏳ Placing Order...' : '✅ Place Order - ₹' + total.toLocaleString()}
                         </button>
