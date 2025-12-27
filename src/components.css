@@ -33,6 +33,44 @@
 
 .logo-fairy span {
     text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+    display: inline-block;
+}
+
+/* Random rotations for navbar logo */
+.logo-fairy span:nth-child(1) {
+    transform: rotate(-5deg);
+}
+
+.logo-fairy span:nth-child(2) {
+    transform: rotate(3deg);
+}
+
+.logo-fairy span:nth-child(3) {
+    transform: rotate(-2deg);
+}
+
+.logo-fairy span:nth-child(4) {
+    transform: rotate(4deg);
+}
+
+.logo-fairy span:nth-child(5) {
+    transform: rotate(-3deg);
+}
+
+.logo-fairy span:nth-child(6) {
+    transform: rotate(0deg);
+}
+
+.logo-fairy span:nth-child(7) {
+    transform: rotate(4deg);
+}
+
+.logo-fairy span:nth-child(8) {
+    transform: rotate(-3deg);
+}
+
+.logo-fairy span:nth-child(9) {
+    transform: rotate(5deg);
 }
 
 .logo-tagline {
@@ -262,6 +300,53 @@
     text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
     display: inline-block;
 }
+
+/* Random rotations for playful look */
+.hero-logo span:nth-child(1) {
+    transform: rotate(-8deg);
+}
+
+/* F */
+.hero-logo span:nth-child(2) {
+    transform: rotate(5deg);
+}
+
+/* a */
+.hero-logo span:nth-child(3) {
+    transform: rotate(-3deg);
+}
+
+/* i */
+.hero-logo span:nth-child(4) {
+    transform: rotate(7deg);
+}
+
+/* r */
+.hero-logo span:nth-child(5) {
+    transform: rotate(-5deg);
+}
+
+/* y */
+.hero-logo span:nth-child(6) {
+    transform: rotate(0deg);
+}
+
+/* . */
+.hero-logo span:nth-child(7) {
+    transform: rotate(6deg);
+}
+
+/* C */
+.hero-logo span:nth-child(8) {
+    transform: rotate(-4deg);
+}
+
+/* o */
+.hero-logo span:nth-child(9) {
+    transform: rotate(8deg);
+}
+
+/* m */
 
 .hero-subtitle {
     font-size: 1.1rem;
