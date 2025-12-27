@@ -1,5 +1,6 @@
 // Product Context - Dynamic Product & Category Management
-import { createContext, useContext, useReducer, useEffect } from 'react';
+// FIXED: Products persist even after code changes
+import { createContext, useContext, useReducer, useEffect, useState } from 'react';
 
 // Default categories
 const defaultCategories = [
@@ -9,7 +10,7 @@ const defaultCategories = [
     { id: 'babycare', name: 'Baby Care', icon: '🍼' }
 ];
 
-// Default products
+// Default products - ONLY used if no data exists
 const defaultProducts = [
     {
         id: 1,
@@ -124,32 +125,47 @@ const productReducer = (state, action) => {
     }
 };
 
+// Check if data was ever initialized
+const DATA_INITIALIZED_KEY = 'fairy_data_initialized';
+
 export function ProductProvider({ children }) {
     const [state, dispatch] = useReducer(productReducer, { products: [], categories: [] });
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load from localStorage on mount
+    // Load from localStorage on mount - NEVER overwrite user data
     useEffect(() => {
+        const wasInitialized = localStorage.getItem(DATA_INITIALIZED_KEY);
         const savedProducts = localStorage.getItem('fairy_products');
         const savedCategories = localStorage.getItem('fairy_categories');
 
+        let products = [];
+        let categories = [];
+
+        // If data was ever saved before, ALWAYS use saved data
+        if (wasInitialized === 'true') {
+            products = savedProducts ? JSON.parse(savedProducts) : [];
+            categories = savedCategories ? JSON.parse(savedCategories) : defaultCategories;
+        } else {
+            // First time - use defaults and mark as initialized
+            products = defaultProducts;
+            categories = defaultCategories;
+            localStorage.setItem(DATA_INITIALIZED_KEY, 'true');
+        }
+
         dispatch({
             type: 'LOAD_DATA',
-            payload: {
-                products: savedProducts ? JSON.parse(savedProducts) : defaultProducts,
-                categories: savedCategories ? JSON.parse(savedCategories) : defaultCategories
-            }
+            payload: { products, categories }
         });
+        setIsLoaded(true);
     }, []);
 
-    // Save to localStorage on change
+    // Save to localStorage on change - ALWAYS save
     useEffect(() => {
-        if (state.products.length > 0) {
+        if (isLoaded) {
             localStorage.setItem('fairy_products', JSON.stringify(state.products));
-        }
-        if (state.categories.length > 0) {
             localStorage.setItem('fairy_categories', JSON.stringify(state.categories));
         }
-    }, [state.products, state.categories]);
+    }, [state.products, state.categories, isLoaded]);
 
     const addProduct = (product) => dispatch({ type: 'ADD_PRODUCT', payload: product });
     const updateProduct = (product) => dispatch({ type: 'UPDATE_PRODUCT', payload: product });
