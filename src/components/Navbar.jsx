@@ -51,6 +51,10 @@ export default function Navbar() {
                 </div>
 
                 <div className="navbar-actions">
+                    <button className="theme-toggle" onClick={() => navigate('/account')} aria-label="Account">
+                        👤
+                    </button>
+
                     <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
                         {isDark ? '☀️' : '🌙'}
                     </button>
@@ -79,6 +83,7 @@ export default function Navbar() {
                             {cat.icon} {cat.name}
                         </Link>
                     ))}
+                    <Link to="/account" className="navbar-link" onClick={() => setIsMobileMenuOpen(false)}>👤 My Account</Link>
                     <Link to="/admin" className="navbar-link" onClick={() => setIsMobileMenuOpen(false)}>📊 Admin</Link>
                 </div>
             )}
