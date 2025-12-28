@@ -34,14 +34,32 @@ export default function Dashboard() {
         loadData();
     }, [isAdmin, navigate]);
 
-    const loadData = () => {
-        setOrders(getOrders());
-        setStats(getOrderStats());
+    const [ordersLoading, setOrdersLoading] = useState(true);
+
+    const loadData = async () => {
+        setOrdersLoading(true);
+        try {
+            const [ordersData, statsData] = await Promise.all([
+                getOrders(),
+                getOrderStats()
+            ]);
+            setOrders(ordersData);
+            setStats(statsData);
+        } catch (error) {
+            console.error('Error loading orders:', error);
+        } finally {
+            setOrdersLoading(false);
+        }
     };
 
-    const handleStatusChange = (orderId, newStatus) => {
-        updateOrderStatus(orderId, newStatus);
-        loadData();
+    const handleStatusChange = async (order, newStatus) => {
+        try {
+            await updateOrderStatus(order.id, newStatus, order.dbId);
+            loadData();
+        } catch (error) {
+            console.error('Error updating status:', error);
+            alert('Error updating order status');
+        }
     };
 
     const handleLogout = () => { logout(); navigate('/admin'); };
@@ -238,7 +256,7 @@ export default function Dashboard() {
                                                 <td><strong>₹{order.total.toLocaleString()}</strong></td>
                                                 <td className="text-small">{formatDate(order.createdAt)}</td>
                                                 <td>
-                                                    <select className="status-select" value={order.status} onChange={(e) => handleStatusChange(order.id, e.target.value)}>
+                                                    <select className="status-select" value={order.status} onChange={(e) => handleStatusChange(order, e.target.value)}>
                                                         <option value="pending">⏳ Pending</option>
                                                         <option value="processing">🔄 Processing</option>
                                                         <option value="shipped">🚚 Shipped</option>

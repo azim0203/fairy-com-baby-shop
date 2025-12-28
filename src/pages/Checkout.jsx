@@ -83,7 +83,7 @@ export default function Checkout() {
         return encodeURIComponent(message);
     };
 
-    const handleWhatsAppOrder = () => {
+    const handleWhatsAppOrder = async () => {
         if (!formData.name || !formData.phone || !formData.address || !formData.pincode) {
             alert('Please fill in all required fields (Name, Phone, Address, Pincode)');
             return;
@@ -97,16 +97,20 @@ export default function Checkout() {
         const message = generateWhatsAppMessage();
         const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
 
-        // Save order locally too
-        saveOrder({
-            customer: formData,
-            items: items,
-            subtotal: subtotal,
-            shipping: shipping,
-            total: total,
-            deliveryInfo: deliveryInfo.label,
-            orderMethod: 'whatsapp'
-        });
+        // Save order to Supabase
+        try {
+            await saveOrder({
+                customer: formData,
+                items: items,
+                subtotal: subtotal,
+                shipping: shipping,
+                total: total,
+                deliveryInfo: deliveryInfo.label,
+                orderMethod: 'whatsapp'
+            });
+        } catch (error) {
+            console.error('Error saving WhatsApp order:', error);
+        }
 
         // Open WhatsApp
         window.open(whatsappUrl, '_blank');
@@ -119,7 +123,7 @@ export default function Checkout() {
         }, 1000);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!deliveryInfo.valid) {
@@ -129,20 +133,23 @@ export default function Checkout() {
 
         setIsSubmitting(true);
 
-        const order = saveOrder({
-            customer: formData,
-            items: items,
-            subtotal: subtotal,
-            shipping: shipping,
-            total: total,
-            deliveryInfo: deliveryInfo.label
-        });
+        try {
+            const order = await saveOrder({
+                customer: formData,
+                items: items,
+                subtotal: subtotal,
+                shipping: shipping,
+                total: total,
+                deliveryInfo: deliveryInfo.label
+            });
 
-        clearCart();
-
-        setTimeout(() => {
+            clearCart();
             navigate(`/order-success/${order.id}`);
-        }, 1000);
+        } catch (error) {
+            console.error('Error placing order:', error);
+            alert('Error placing order. Please try again.');
+            setIsSubmitting(false);
+        }
     };
 
     return (

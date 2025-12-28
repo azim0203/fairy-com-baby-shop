@@ -8,24 +8,33 @@ export default function TrackOrder() {
     const [order, setOrder] = useState(null);
     const [error, setError] = useState('');
     const [searched, setSearched] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleSearch = (e) => {
+    const handleSearch = async (e) => {
         e.preventDefault();
         setError('');
         setSearched(true);
+        setOrder(null);
 
         if (!orderId.trim()) {
             setError('Please enter an Order ID');
             return;
         }
 
-        const foundOrder = getOrderById(orderId.trim().toUpperCase());
+        setLoading(true);
+        try {
+            const foundOrder = await getOrderById(orderId.trim().toUpperCase());
 
-        if (foundOrder) {
-            setOrder(foundOrder);
-        } else {
-            setOrder(null);
-            setError('Order not found. Please check your Order ID.');
+            if (foundOrder) {
+                setOrder(foundOrder);
+            } else {
+                setError('Order not found. Please check your Order ID.');
+            }
+        } catch (err) {
+            console.error('Error searching order:', err);
+            setError('Error searching for order. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
