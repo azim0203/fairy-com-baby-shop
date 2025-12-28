@@ -1,10 +1,10 @@
-// Home Page - Nursery Theme with White Banner Card
+// Home Page - Nursery Theme with Loading State
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { useProducts } from '../context/ProductContext';
 
 export default function Home() {
-    const { products, categories } = useProducts();
+    const { products, categories, loading } = useProducts();
     const featuredProducts = products.slice(0, 8);
     const getCategoryCount = (catId) => products.filter(p => p.category === catId).length;
 
@@ -70,17 +70,25 @@ export default function Home() {
                         <p className="section-desc">Find everything your little one needs</p>
                     </div>
 
-                    <div className="grid grid-4">
-                        {categories.map((cat) => (
-                            <Link to={`/products?category=${cat.id}`} key={cat.id}>
-                                <div className="card category-card">
-                                    <div className="category-icon">{cat.icon}</div>
-                                    <h3 className="category-name">{cat.name}</h3>
-                                    <p className="category-count">{getCategoryCount(cat.id)} Products</p>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div className="loading-grid">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="skeleton-card" />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-4">
+                            {categories.map((cat) => (
+                                <Link to={`/products?category=${cat.id}`} key={cat.id}>
+                                    <div className="card category-card">
+                                        <div className="category-icon">{cat.icon}</div>
+                                        <h3 className="category-name">{cat.name}</h3>
+                                        <p className="category-count">{getCategoryCount(cat.id)} Products</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -92,7 +100,13 @@ export default function Home() {
                         <p className="section-desc">Best sellers loved by parents</p>
                     </div>
 
-                    {featuredProducts.length > 0 ? (
+                    {loading ? (
+                        <div className="products-grid">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="skeleton-product" />
+                            ))}
+                        </div>
+                    ) : featuredProducts.length > 0 ? (
                         <div className="products-grid">
                             {featuredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />

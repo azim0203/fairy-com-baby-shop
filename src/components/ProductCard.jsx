@@ -1,4 +1,4 @@
-// ProductCard Component
+// ProductCard Component - Improved with out of stock handling
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useState } from 'react';
@@ -7,11 +7,16 @@ export default function ProductCard({ product }) {
     const { addToCart } = useCart();
     const [isAdding, setIsAdding] = useState(false);
 
+    const isOutOfStock = product.quantity === 0;
+
     const handleAddToCart = (e) => {
         e.preventDefault();
+        e.stopPropagation();
+        if (isOutOfStock) return;
+
         setIsAdding(true);
         addToCart(product);
-        setTimeout(() => setIsAdding(false), 500);
+        setTimeout(() => setIsAdding(false), 800);
     };
 
     const discount = product.originalPrice
@@ -19,13 +24,16 @@ export default function ProductCard({ product }) {
         : 0;
 
     return (
-        <div className="product-card">
+        <div className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
             <Link to={`/product/${product.id}`}>
                 <div className="product-image">
                     <img src={product.image} alt={product.name} loading="lazy" />
                     {product.badge && <span className="product-badge">{product.badge}</span>}
                     {discount > 0 && !product.badge && (
-                        <span className="product-badge">{discount}% OFF</span>
+                        <span className="product-badge sale">{discount}% OFF</span>
+                    )}
+                    {isOutOfStock && (
+                        <div className="out-of-stock-tag">Out of Stock</div>
                     )}
                 </div>
             </Link>
@@ -44,10 +52,11 @@ export default function ProductCard({ product }) {
                 </div>
 
                 <button
-                    className={`add-to-cart-btn ${isAdding ? 'animate-pulse' : ''}`}
+                    className={`add-to-cart-btn ${isAdding ? 'added' : ''} ${isOutOfStock ? 'disabled' : ''}`}
                     onClick={handleAddToCart}
+                    disabled={isOutOfStock}
                 >
-                    {isAdding ? '✓ Added!' : '🛒 Add to Cart'}
+                    {isOutOfStock ? '❌ Out of Stock' : (isAdding ? '✓ Added!' : '🛒 Add to Cart')}
                 </button>
             </div>
         </div>

@@ -1,11 +1,11 @@
-// Products Page - Using Dynamic Products
+// Products Page - With Loading State
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { useProducts } from '../context/ProductContext';
 
 export default function Products() {
-    const { products, categories } = useProducts();
+    const { products, categories, loading } = useProducts();
     const [searchParams, setSearchParams] = useSearchParams();
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -83,20 +83,46 @@ export default function Products() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
+                        {searchTerm && (
+                            <button
+                                className="search-clear"
+                                onClick={() => setSearchTerm('')}
+                                aria-label="Clear search"
+                            >
+                                ✕
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                {filteredProducts.length > 0 ? (
+                {loading ? (
                     <div className="products-grid">
-                        {filteredProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                        {[1, 2, 3, 4, 5, 6].map(i => (
+                            <div key={i} className="skeleton-product" />
                         ))}
                     </div>
+                ) : filteredProducts.length > 0 ? (
+                    <>
+                        <p className="products-count">{filteredProducts.length} products found</p>
+                        <div className="products-grid">
+                            {filteredProducts.map((product) => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                    </>
                 ) : (
                     <div className="empty-cart">
                         <div className="empty-cart-icon">🔍</div>
                         <h2>No Products Found</h2>
                         <p>Try adjusting your search or filter criteria</p>
+                        {searchTerm && (
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setSearchTerm('')}
+                            >
+                                Clear Search
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
