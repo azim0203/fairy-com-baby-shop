@@ -1,14 +1,15 @@
-// Admin Dashboard with Product & Category Management
-import { useState, useEffect } from 'react';
+// Admin Dashboard with Product & Category Management + Image Upload
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useProducts } from '../../context/ProductContext';
 import { getOrders, updateOrderStatus, getOrderStats } from '../../utils/storage';
+import { uploadImage } from '../../lib/supabase';
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const { isAdmin, logout } = useAuth();
-    const { products, categories, addProduct, updateProduct, deleteProduct, addCategory, deleteCategory } = useProducts();
+    const { products, categories, loading, addProduct, updateProduct, deleteProduct, addCategory, deleteCategory } = useProducts();
     const [orders, setOrders] = useState([]);
     const [stats, setStats] = useState({ total: 0, pending: 0, shipped: 0, delivered: 0, revenue: 0 });
     const [activeTab, setActiveTab] = useState('orders');
@@ -19,6 +20,10 @@ export default function Dashboard() {
     const [productForm, setProductForm] = useState({
         name: '', category: 'toys', price: '', originalPrice: '', quantity: '', image: '', description: '', badge: ''
     });
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     // Category Modal
     const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -41,10 +46,31 @@ export default function Dashboard() {
 
     const handleLogout = () => { logout(); navigate('/admin'); };
 
+    // Image handlers
+    const handleImageSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image too large! Max 5MB allowed.');
+                return;
+            }
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+            setProductForm({ ...productForm, image: '' });
+        }
+    };
+
+    const clearImage = () => {
+        setImageFile(null);
+        setImagePreview('');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
     // Product handlers
     const openAddProduct = () => {
         setEditingProduct(null);
         setProductForm({ name: '', category: categories[0]?.id || 'toys', price: '', originalPrice: '', quantity: '', image: '', description: '', badge: '' });
+        clearImage();
         setShowProductModal(true);
     };
 
@@ -56,46 +82,109 @@ export default function Dashboard() {
             quantity: product.quantity?.toString() || '0', image: product.image,
             description: product.description || '', badge: product.badge || ''
         });
+        setImagePreview(product.image || '');
+        setImageFile(null);
         setShowProductModal(true);
     };
 
-    const handleProductSubmit = (e) => {
+    const handleProductSubmit = async (e) => {
         e.preventDefault();
-        const productData = {
-            ...productForm,
-            price: parseInt(productForm.price),
-            originalPrice: productForm.originalPrice ? parseInt(productForm.originalPrice) : null,
-            quantity: parseInt(productForm.quantity) || 0
-        };
-        if (editingProduct) updateProduct({ ...productData, id: editingProduct.id });
-        else addProduct(productData);
-        setShowProductModal(false);
-    };
+        setIsUploading(true);
 
-    const handleDeleteProduct = (id) => {
-        if (window.confirm('Delete this product?')) deleteProduct(id);
-    };
+        try {
+            let imageUrl = productForm.image;
 
-    // Category handlers
-    const handleAddCategory = (e) => {
-        e.preventDefault();
-        if (categoryForm.name.trim()) {
-            addCategory({ name: categoryForm.name.trim(), icon: categoryForm.icon || '📦' });
-            setCategoryForm({ name: '', icon: '📦' });
-            setShowCategoryModal(false);
+            // Upload new image if selected
+            if (imageFile) {
+                imageUrl = await uploadImage(imageFile);
+            }
+
+            if (!imageUrl) {
+                alert('Please select an image or provide an image URL');
+                setIsUploading(false);
+                return;
+            }
+
+            const productData = {
+                ...productForm,
+                image: imageUrl,
+                price: parseInt(productForm.price),
+                originalPrice: productForm.originalPrice ? parseInt(productForm.originalPrice) : null,
+                quantity: parseInt(productForm.quantity) || 0
+            };
+
+            if (editingProduct) {
+                await updateProduct({ ...productData, id: editingProduct.id });
+            } else {
+                await addProduct(productData);
+            }
+
+            setShowProductModal(false);
+            clearImage();
+        } catch (error) {
+            console.error('Error saving product:', error);
+            alert('Error saving product. Please try again.');
+        } finally {
+            setIsUploading(false);
         }
     };
 
-    const handleDeleteCategory = (id) => {
+    const handleDeleteProduct = async (id) => {
+        if (window.confirm('Delete this product?')) {
+            try {
+                await deleteProduct(id);
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                alert('Error deleting product.');
+            }
+        }
+    };
+
+    // Category handlers
+    const handleAddCategory = async (e) => {
+        e.preventDefault();
+        if (categoryForm.name.trim()) {
+            try {
+                await addCategory({ name: categoryForm.name.trim(), icon: categoryForm.icon || '📦' });
+                setCategoryForm({ name: '', icon: '📦' });
+                setShowCategoryModal(false);
+            } catch (error) {
+                console.error('Error adding category:', error);
+                alert('Error adding category.');
+            }
+        }
+    };
+
+    const handleDeleteCategory = async (id) => {
         const hasProducts = products.some(p => p.category === id);
         if (hasProducts) {
             alert('Cannot delete! Move products to another category first.');
             return;
         }
-        if (window.confirm('Delete this category?')) deleteCategory(id);
+        if (window.confirm('Delete this category?')) {
+            try {
+                await deleteCategory(id);
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                alert('Error deleting category.');
+            }
+        }
     };
 
     const formatDate = (dateStr) => new Date(dateStr).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+    if (loading) {
+        return (
+            <div className="admin-layout">
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100%' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+                        <p>Loading products...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="admin-layout">
@@ -168,27 +257,35 @@ export default function Dashboard() {
                 {/* Products Tab */}
                 {activeTab === 'products' && (
                     <div className="products-admin-grid">
-                        {products.map((product) => (
-                            <div key={product.id} className="product-admin-card">
-                                <div className="product-admin-image">
-                                    <img src={product.image} alt={product.name} />
-                                    {product.badge && <span className="product-badge">{product.badge}</span>}
-                                </div>
-                                <div className="product-admin-info">
-                                    <span className="product-category">{product.category}</span>
-                                    <h4>{product.name}</h4>
-                                    <div className="product-price">
-                                        <span className="price-current">₹{product.price}</span>
-                                        {product.originalPrice && <span className="price-original">₹{product.originalPrice}</span>}
-                                    </div>
-                                    <div className="product-stock">📦 Stock: <strong>{product.quantity || 0}</strong></div>
-                                    <div className="product-admin-actions">
-                                        <button onClick={() => openEditProduct(product)} className="btn btn-secondary btn-sm">✏️ Edit</button>
-                                        <button onClick={() => handleDeleteProduct(product.id)} className="btn btn-danger btn-sm">🗑️</button>
-                                    </div>
-                                </div>
+                        {products.length === 0 ? (
+                            <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
+                                <div className="empty-icon">🛍️</div>
+                                <h3>No Products Yet</h3>
+                                <p>Click "Add Product" to add your first product</p>
                             </div>
-                        ))}
+                        ) : (
+                            products.map((product) => (
+                                <div key={product.id} className="product-admin-card">
+                                    <div className="product-admin-image">
+                                        <img src={product.image} alt={product.name} />
+                                        {product.badge && <span className="product-badge">{product.badge}</span>}
+                                    </div>
+                                    <div className="product-admin-info">
+                                        <span className="product-category">{product.category}</span>
+                                        <h4>{product.name}</h4>
+                                        <div className="product-price">
+                                            <span className="price-current">₹{product.price}</span>
+                                            {product.originalPrice && <span className="price-original">₹{product.originalPrice}</span>}
+                                        </div>
+                                        <div className="product-stock">📦 Stock: <strong>{product.quantity || 0}</strong></div>
+                                        <div className="product-admin-actions">
+                                            <button onClick={() => openEditProduct(product)} className="btn btn-secondary btn-sm">✏️ Edit</button>
+                                            <button onClick={() => handleDeleteProduct(product.id)} className="btn btn-danger btn-sm">🗑️</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 )}
 
@@ -206,9 +303,9 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {/* Product Modal */}
+                {/* Product Modal with Image Upload */}
                 {showProductModal && (
-                    <div className="modal-overlay" onClick={() => setShowProductModal(false)}>
+                    <div className="modal-overlay" onClick={() => !isUploading && setShowProductModal(false)}>
                         <div className="modal-content" onClick={e => e.stopPropagation()}>
                             <h2>{editingProduct ? '✏️ Edit Product' : '➕ Add Product'}</h2>
                             <form onSubmit={handleProductSubmit}>
@@ -238,10 +335,47 @@ export default function Dashboard() {
                                         <input type="number" className="input" min="0" value={productForm.originalPrice} onChange={e => setProductForm({ ...productForm, originalPrice: e.target.value })} />
                                     </div>
                                 </div>
+
+                                {/* Image Upload Section */}
                                 <div className="input-group">
-                                    <label>Image URL *</label>
-                                    <input type="url" className="input" required placeholder="https://..." value={productForm.image} onChange={e => setProductForm({ ...productForm, image: e.target.value })} />
+                                    <label>Product Image *</label>
+                                    <div className="image-upload-area">
+                                        {imagePreview ? (
+                                            <div className="image-preview">
+                                                <img src={imagePreview} alt="Preview" />
+                                                <button type="button" onClick={clearImage} className="image-remove-btn">✕</button>
+                                            </div>
+                                        ) : (
+                                            <div className="image-upload-placeholder" onClick={() => fileInputRef.current?.click()}>
+                                                <span className="upload-icon">📷</span>
+                                                <span>Click to upload image</span>
+                                                <span className="upload-hint">or drag and drop (Max 5MB)</span>
+                                            </div>
+                                        )}
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageSelect}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </div>
+                                    <div style={{ textAlign: 'center', margin: '0.5rem 0', color: 'var(--text-light)' }}>— OR —</div>
+                                    <input
+                                        type="url"
+                                        className="input"
+                                        placeholder="Paste image URL"
+                                        value={productForm.image}
+                                        onChange={e => {
+                                            setProductForm({ ...productForm, image: e.target.value });
+                                            if (e.target.value) {
+                                                setImagePreview(e.target.value);
+                                                setImageFile(null);
+                                            }
+                                        }}
+                                    />
                                 </div>
+
                                 <div className="input-group">
                                     <label>Description</label>
                                     <textarea className="input" rows="2" value={productForm.description} onChange={e => setProductForm({ ...productForm, description: e.target.value })} />
@@ -251,8 +385,10 @@ export default function Dashboard() {
                                     <input type="text" className="input" value={productForm.badge} onChange={e => setProductForm({ ...productForm, badge: e.target.value })} />
                                 </div>
                                 <div className="modal-actions">
-                                    <button type="button" onClick={() => setShowProductModal(false)} className="btn btn-secondary">Cancel</button>
-                                    <button type="submit" className="btn btn-primary">{editingProduct ? 'Update' : 'Add'}</button>
+                                    <button type="button" onClick={() => setShowProductModal(false)} className="btn btn-secondary" disabled={isUploading}>Cancel</button>
+                                    <button type="submit" className="btn btn-primary" disabled={isUploading}>
+                                        {isUploading ? '⏳ Uploading...' : (editingProduct ? 'Update' : 'Add')}
+                                    </button>
                                 </div>
                             </form>
                         </div>

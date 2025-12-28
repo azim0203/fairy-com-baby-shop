@@ -455,3 +455,76 @@ tr:hover {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* Image Upload Area */
+.image-upload-area {
+    margin-bottom: 0.75rem;
+}
+
+.image-upload-placeholder {
+    border: 2px dashed var(--pink-medium);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--cream);
+}
+
+.image-upload-placeholder:hover {
+    border-color: var(--logo-m);
+    background: var(--pink-soft);
+}
+
+.upload-icon {
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.image-upload-placeholder span {
+    display: block;
+    color: var(--text-medium);
+    font-weight: 600;
+}
+
+.upload-hint {
+    font-size: 0.75rem !important;
+    color: var(--text-light) !important;
+    margin-top: 0.25rem;
+}
+
+.image-preview {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    max-height: 200px;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+}
+
+.image-remove-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-remove-btn:hover {
+    background: var(--logo-f);
+}
